@@ -1,0 +1,31 @@
+# Dev session artifacts
+session*
+SESSION*
+SESSION-RESUME.md
+
+# Local user config (Claude Code settings)
+/.claude/
+.claude/settings.local.json
+
+# MCP config with local paths
+.mcp.json
+
+# macOS system files and folders
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon\r
+._*
+.Spotlight-V100
+.Trashes
+.fseventsd/
+.TemporaryItems/
+.DocumentRevisions-V100/
+.VolumeIcon.icns
+Network Trash Folder
+Temporary Items
+.env
+
+# Thumbnails / other OS artifacts
+Thumbs.db
+ehthumbs.db
