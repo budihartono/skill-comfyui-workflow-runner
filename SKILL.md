@@ -1,5 +1,5 @@
 ---
-name: comfyui
+name: ComfyUI Workflow Runner
 description: >
   Queue a ComfyUI workflow for image generation. Injects prompt and parameters
   into the correct nodes, queues to the ComfyUI server, polls until complete,
