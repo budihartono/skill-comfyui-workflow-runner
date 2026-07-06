@@ -8,16 +8,17 @@ description: >
   Trigger when:
   - User says "run this workflow", "queue this in ComfyUI", "generate with ComfyUI",
     "send to ComfyUI", "run in ComfyUI", "use this workflow"
-  - User attaches a .json file and mentions image generation, ComfyUI, or diffusion
+  - User attaches a .json file (workflow) and optionally an image file
+  - User mentions image generation, ComfyUI, or diffusion
   - User types /comfyui
   - User says "generate an image" and a workflow file is in context
 ---
 
 # ComfyUI Skill
 
-Queue a ComfyUI workflow, inject prompt + parameters, poll for completion, save outputs locally.
+Queue a ComfyUI workflow, inject prompt + parameters + images, poll for completion, save outputs locally.
 
-**MCP tools available:** `mcp__comfyui__comfyui_health`, `mcp__comfyui__comfyui_queue_prompt`, `mcp__comfyui__comfyui_poll_status`, `mcp__comfyui__comfyui_get_outputs`, `mcp__comfyui__comfyui_list_models`
+**MCP tools available:** `mcp__comfyui__comfyui_health`, `mcp__comfyui__comfyui_queue_prompt`, `mcp__comfyui__comfyui_poll_status`, `mcp__comfyui__comfyui_get_outputs`, `mcp__comfyui__comfyui_list_models`, `mcp__comfyui__comfyui_upload_image`
 
 ---
 
@@ -70,6 +71,11 @@ Extract model filename from `inputs["ckpt_name"]` or `inputs["unet_name"]` or `i
 ### 1e. Save Node
 `class_type` in: `SaveImage`, `Image Save`, `VHS_VideoCombine`, `SaveAnimatedWEBP`, `SaveAnimatedPNG`
 
+### 1f. Image Load Node
+`class_type` in: `LoadImage`, `LoadImageMask`, `LoraLoader`, `ControlNetLoader`
+
+For each image load node found, record node_id and the input field that expects the image filename (e.g., `image` for LoadImage).
+
 ---
 
 ## Step 2 — Model-Aware Advisory (show BEFORE asking overrides)
@@ -121,6 +127,7 @@ Collect only if node exists in workflow:
 - **If standard latent:** width + height (integers)
 - Batch size (show current value)
 - Save filename prefix (if SaveImage node has `filename_prefix`)
+- **If image load node detected:** Ask for image file (required if node exists). Accept file path or file attachment.
 
 **Aspect ratio options for CAS node** (show current workflow value as preselected):
 - `1:1 Square`
@@ -175,6 +182,22 @@ if latent_id:
 if save_id and prefix_override:
     workflow[save_id]["inputs"]["filename_prefix"] = filename_prefix
 ```
+
+---
+
+## Step 4.5 — Upload Image (if needed)
+
+If image load nodes detected and user provided image file:
+
+```
+1. mcp__comfyui__comfyui_upload_image(server=server, image_path=user_image_path)
+   - Returns: { filename, subfolder } (the ComfyUI server path reference)
+   
+2. Inject uploaded image reference into each image load node:
+   workflow[image_node_id]["inputs"]["image"] = [filename, subfolder]
+```
+
+Only call if at least one image node + image file provided. Skip otherwise.
 
 ---
 
